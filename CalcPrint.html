@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Preços para Impressão 3D</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            max-width: 700px; /* Increased max-width for columns */
+            width: 100%;
+            border: 1px solid #e0e0e0;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            gap: 15px;
+            color: #007bff; /* Base color for the SVG */
+        }
+        .header svg {
+            width: 70px; /* Adjusted size for your logo */
+            height: auto;
+            fill: currentColor; /* Inherit color from parent */
+        }
+        h1 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 2.2em;
+            letter-spacing: -0.5px;
+        }
+        h3 {
+            color: #34495e;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .input-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px; /* Space between columns */
+            margin-bottom: 10px;
+        }
+        .input-group {
+            flex: 1; /* Allows items to grow and shrink */
+            min-width: 150px; /* Minimum width before wrapping */
+            margin-bottom: 10px; /* Space below each group when wrapping */
+            display: flex;
+            flex-direction: column;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.95em;
+        }
+        .input-group input[type="number"],
+        .input-group input[type="text"] {
+            width: 100%; /* Fill available space within its flex item */
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .input-group input[type="number"]:focus,
+        .input-group input[type="text"]:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+        .input-inline {
+            display: flex;
+            gap: 10px;
+        }
+        .input-inline input {
+            flex: 1;
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .calculate-btn {
+            width: 100%;
+            padding: 15px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .calculate-btn:hover {
+            background-color: #218838;
+        }
+        .results {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 25px;
+        }
+        .results h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        .results p {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .results p span:first-child {
+            font-weight: 500;
+            color: #444;
+        }
+        .results p span:last-child {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .results .final-price {
+            font-size: 1.4em;
+            color: #28a745;
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e6ffed;
+            border-radius: 8px;
+            border: 1px solid #a7d9b5;
+        }
+        .results .final-price span {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        /* History Section */
+        #history-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        #history-section h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 1.8em;
+        }
+        #history-table-container {
+            max-height: 300px; /* Limit height for scroll */
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background-color: #fcfcfc;
+        }
+        #history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        #history-table th, #history-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        #history-table th {
+            background-color: #e9ecef;
+            color: #495057;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 1; /* Ensures header stays on top when scrolling */
+        }
+        #history-table tr:hover {
+            background-color: #f2f2f2;
+        }
+        #history-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .empty-history-message {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+        .clear-history-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: block; /* Make it a block element */
+            width: fit-content; /* Adjust width to content */
+            margin: 15px auto; /* Center the button below the table */
+            padding: 10px 20px;
+        }
+        .clear-history-btn:hover {
+            background-color: #5a6268;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .input-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            .input-group {
+                min-width: unset; /* Remove min-width for small screens */
+                width: 100%;
+            }
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            #history-table th, #history-table td {
+                padding: 8px 10px; /* Smaller padding for smaller screens */
+            }
+            .container {
+                padding: 20px;
+            }
+            /* Hide some columns on small screens for better readability */
+            #history-table th:nth-child(3), #history-table td:nth-child(3), /* C. Mat. */
+            #history-table th:nth-child(4), #history-table td:nth-child(4), /* C. Tempo */
+            #history-table th:nth-child(5), #history-table td:nth-child(5), /* C. Ener. */
+            #history-table th:nth-child(6), #history-table td:nth-child(6) { /* Outros C. */
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <!-- User provided SVG code -->
+            <svg id="uuid-d7e0983a-7e80-4b30-aaba-c48d8a41f35e" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 185.76 65.21">
+                <defs>
+                    <!-- Removed fill from defs to allow currentColor to work -->
+                    <style>.svg-fill{fill:currentColor;}</style>
+                </defs>
+                <g id="uuid-5ed50c5a-cf6a-48b9-9ebd-7adc89b5be19">
+                    <path class="svg-fill" d="M163.76,44.77c-2.6,0-5.2,0-7.8,0,2.6,0,5.2,0,7.8,0,2.36,0,4.73.01,7.09,0-2.36.01-4.73,0-7.09,0Z"/>
+                    <path class="svg-fill" d="M132.57,57.53c-.23.58-.37,1.18-.35,1.81-.02.57.08,1.13.24,1.67-.16-.54-.26-1.1-.24-1.67-.02-.63.12-1.23.35-1.81Z"/>
+                    <path class="svg-fill" d="M152.16,44.76c1.18.01,1.48-.48.97-1.54-3.47-7.31-6.95-14.63-10.44-21.93-.32-.67-.36-1.22-.03-1.9,2.85-5.98,5.66-11.98,8.48-17.97.46-.98.23-1.38-.84-1.39-2.07-.02-4.14-.04-6.2-.01-3.11.05-5.42,1.48-6.83,4.24-1.06,2.07-2,4.2-3,6.3-.55,1.15-1.11,2.28-1.66,3.42-.2-.4-.2-.74-.2-1.09,0-1.92.06-3.84-.05-5.76-.17-2.91-1.65-5.02-4.24-6.37-1.63-.85-3.37-.74-5.11-.74q-2.04,0-2.04,2.06c0,12.14,0,24.28,0,36.42,0,1.68,0,3.37.02,5.05.01,1.03.22,1.23,1.27,1.23.89,0,1.77.01,2.66-.03,3.94-.18,6.94-2.82,7.39-6.65.18-1.52.08-3.07.09-4.6.01-2.3,0-4.59,0-6.89.06-.01.11-.02.17-.03.1.17.22.34.31.52,2.1,4.41,4.21,8.82,6.28,13.24,1.17,2.51,3.13,3.93,5.83,4.3,2.38.32,4.78.1,7.17.13Z"/>
+                    <path class="svg-fill" d="M184.41,24.36c-2.63-5.41-7.09-8-13.01-8.21-1.62-.06-3.25.02-4.87-.03-1.49-.05-2.49-1.2-2.43-2.69.06-1.43,1.19-2.44,2.81-2.45,2.24-.02,4.49.04,6.73-.05,2.96-.13,5.64-2.36,6.52-5.17.46-1.48.3-2.98.33-4.48.02-1.14-.12-1.27-1.27-1.27-4.37,0-8.74,0-13.11,0-1.33,0-2.66.16-3.93.57-6.69,2.16-11.04,8.62-9.51,16.14,1.12,5.52,6.17,10.08,11.75,10.56,2.1.18,4.19.07,6.29.13,1.94.06,3.21,1.35,3.2,3.25-.01,1.7-1.41,3-3.26,3-2.69,0-5.38-.01-8.06,0-3.6.03-6.26,1.82-7.53,5.1-.57,1.49-.49,3.07-.47,4.64,0,1.08.28,1.34,1.38,1.34,2.6,0,5.2,0,7.8,0,2.36,0,4.73.01,7.09,0,3.24-.02,6.2-.92,8.87-2.79,5.58-3.92,7.64-11.53,4.69-17.62Z"/>
+                    <path class="svg-fill" d="M110.94,44.56c2.66.47,5.36.18,8.04.18.81,0,1.01-.51.65-1.31-.47-1.02-.95-2.03-1.43-3.04-1.87-3.94-3.75-7.87-5.62-11.81-.17-.35-.47-.71.05-1.08.8-.58,1.37-1.38,1.87-2.21,2.63-4.37,2.94-8.98,1.4-13.77-1.93-6-8.19-10.92-14.47-11.41-2.39-.19-4.78-.04-6.67-.1-2.57,0-4.64,0-6.7,0-1.14,0-1.39.37-.94,1.39.67,1.51,1.39,2.99,2.03,4.51,1.45,3.4,4.1,4.95,7.7,5.04,1,.02,2.01.03,2.98.3,2.85.8,4.76,3.49,4.48,6.22-.36,3.47-2.18,5.29-5.53,5.58-.82.07-1.13.52-.78,1.25,2.56,5.43,5.1,10.88,7.73,16.28,1.05,2.16,2.84,3.55,5.23,3.97Z"/>
+                    <path class="svg-fill" d="M36.46,44c.12-.24.23-.48.34-.72,3.28-7.37,6.56-14.74,9.85-22.11,2.94-6.59,5.89-13.17,8.83-19.76.44-.98.18-1.38-.89-1.39-1.65-.02-3.31-.02-4.96,0-3.38.03-5.76,1.65-7.18,4.67-1.12,2.37-2.17,4.77-3.25,7.16-1.07,2.35-2.13,4.7-3.26,7.19-.56-1.18-1.05-2.2-1.55-3.23-1.43-3-3.84-4.55-7.14-4.64-2.07-.06-4.13-.02-6.2-.01-1.15,0-1.44.44-.95,1.48,3.97,8.38,7.95,16.75,11.93,25.13.99,2.07,1.98,4.14,2.96,6.22.15.33.34.52.73.52.39,0,.6-.2.75-.5Z"/>
+                    <path class="svg-fill" d="M14.49,4.58c-.99-2.09-2.57-3.55-4.83-4.24C7.95-.18,6.2.1,4.74,0,3.37,0,2.28,0,1.19.01,0,.02-.26.42.24,1.47c2.48,5.24,4.95,10.48,7.44,15.72,2.32,4.9,4.64,9.79,6.97,14.68,1.92,4.04,3.84,8.08,5.76,12.12.18.37.37.67.83.65.39-.02.61-.22.81-.56,1.36-2.37,2.78-4.72,4.13-7.1,1.33-2.34,1.42-4.74.26-7.2-3.99-8.4-7.95-16.82-11.94-25.22Z"/>
+                    <path class="svg-fill" d="M52.58,53.78c-1.41-.31-2.18.17-2.6,1.62-.61,2.08-1.25,4.15-1.87,6.22-.07,0-.13,0-.2,0-.14-.42-.29-.83-.43-1.25-.59-1.88-1.16-3.76-1.78-5.63-.29-.87-.98-1.14-2.18-1.01-.87.09-1.25.6-1.25,1.41,0,2.92,0,5.85.03,8.77,0,.74.34,1.29,1.17,1.23.78-.05,1.01-.59,1.01-1.3,0-1.83,0-3.66,0-5.49,0-.2-.13-.47.15-.61.2.1.21.29.27.45.62,1.96,1.25,3.93,1.86,5.89.19.62.51,1.07,1.22,1.06.68,0,.97-.45,1.15-1.04.27-.9.56-1.8.85-2.69.41-1.28.84-2.56,1.25-3.84.15,2.08.15,4.11.16,6.15,0,.94.38,1.42,1.08,1.42.72,0,1.15-.46,1.16-1.37.02-2.89.02-5.79,0-8.68,0-.7-.32-1.14-1.06-1.3Z"/>
+                    <path class="svg-fill" d="M100.21,58.57c-.97-.23-1.94-.47-2.9-.74-.45-.13-.79-.43-.78-.95.01-.52.29-.87.78-1.07.59-.24,1.19-.27,1.81-.11.73.19,1.21.69,1.7,1.2.46.48,1.01.47,1.52.11.51-.37.51-.92.22-1.43-.31-.55-.78-.95-1.36-1.22-1.59-.74-3.21-.9-4.89-.31-1.31.46-2.15,1.5-2.19,2.79-.04,1.67.45,2.45,2.04,2.99,1.14.38,2.32.64,3.48.96.5.14.93.4,1.02.98.1.62-.25,1.03-.74,1.28-.52.27-1.06.42-1.69.32-.99-.15-1.63-.74-2.19-1.49-.36-.49-.88-.6-1.42-.37-.58.25-.55.78-.48,1.29.04.33.19.6.42.86,1.09,1.24,2.53,1.51,4.08,1.48.35,0,.71.03,1.06,0,1.94-.18,3.34-1.43,3.46-3.05.14-1.9-.79-3.01-2.95-3.53Z"/>
+                    <path class="svg-fill" d="M90.12,62.92c-1.06-.01-2.12,0-3.19-.01-1.96,0-1.94,0-1.86-2.01-.02-.46.16-.61.62-.6,1.24.02,2.48,0,3.72-.03.6-.01,1.14-.15,1.12-.93-.02-.76-.5-1.01-1.17-1.01-.89,0-1.77.01-2.66,0-1.7,0-1.68,0-1.63-1.73.02-.5.15-.66.66-.65,1.42.03,2.83,0,4.25,0,.68,0,1.27-.19,1.24-1.03-.03-.77-.58-.94-1.24-.94-1.95,0-3.89-.02-5.84,0-1.16,0-1.53.39-1.55,1.55-.02,1.3,0,2.6,0,3.89h0c0,1.36-.01,2.71,0,4.07.01.87.42,1.4,1.24,1.42,2.12.05,4.25.05,6.37.02.63,0,1.18-.26,1.13-1.05-.04-.77-.56-.97-1.22-.98Z"/>
+                    <path class="svg-fill" d="M112.24,58.58c-.94-.23-1.89-.44-2.83-.71-.49-.14-.96-.41-.92-1.03.04-.56.41-.87.92-1.06.58-.22,1.14-.22,1.73-.07.7.17,1.16.66,1.62,1.16.45.49.98.51,1.51.16.55-.36.52-.9.28-1.42-.26-.55-.71-.95-1.25-1.2-1.48-.71-3.01-.95-4.63-.46-2.05.61-2.59,1.82-2.63,3.23-.05,1.46,1.03,2.49,2.73,2.9.97.23,1.94.48,2.91.75.52.14.91.45.97,1.02.06.57-.26.96-.72,1.21-.53.28-1.1.4-1.71.32-.95-.13-1.61-.67-2.14-1.43-.39-.57-1.01-.71-1.56-.38-.55.33-.66.88-.33,1.54.34.67.82,1.16,1.46,1.47.91.45,1.88.7,2.91.62.47-.03.95-.03,1.41-.1,1.92-.3,3.14-1.54,3.2-3.22.06-1.72-.91-2.8-2.94-3.29Z"/>
+                    <path class="svg-fill" d="M57.42,59.62c0-1.39-.01-2.77,0-4.16-.02,1.39,0,2.77,0,4.16,0,1.39,0,2.77,0,4.16-.01-1.39,0-2.77,0-4.16Z"/>
+                    <path class="svg-fill" d="M156.56,59.44c-.45-.25-.23-.41,0-.64.61-.6.86-1.32.7-2.17-.36-1.83-2.14-2.92-4.2-2.52-1.33.26-2.58.7-3.04,2.2-.15.5-.05.95.36,1.17.44.24.97.28,1.36-.2.13-.16.24-.34.35-.5.57-.83,1.41-1.07,2.32-.67.57.24.79.71.75,1.27-.04.55-.34.93-.93,1.02-.32.05-.63.14-.95.19-.43.08-.58.36-.59.76-.01.4.16.69.55.8.31.09.63.18.94.22.87.11,1.12.64,1.07,1.43-.05.82-.5,1.33-1.26,1.46-1.13.19-1.87-.25-2.32-1.28-.25-.57-.77-.65-1.27-.46-.53.2-.73.68-.63,1.23.05.31.16.62.35.9.81,1.18,2.02,1.44,3.07,1.52,1.09,0,1.88-.17,2.65-.51,1.94-.87,2.53-4.21.71-5.21Z"/>
+                    <path class="svg-fill" d="M37.26,53.74c-.76-.02-1.26.54-1.26,1.48-.01,2.84-.02,5.67,0,8.51,0,.88.48,1.41,1.21,1.43.75.02,1.23-.5,1.24-1.39.01-1.45,0-2.89,0-4.34h0c0-1.42.01-2.84,0-4.25,0-.95-.42-1.42-1.19-1.44Z"/>
+                    <path class="svg-fill" d="M23.27,56.71c-1.48,0-2.72,1.2-2.74,2.65-.02,1.59,1.16,2.8,2.74,2.82,1.5.02,2.72-1.21,2.73-2.73,0-1.53-1.19-2.74-2.73-2.74Z"/>
+                    <path class="svg-fill" d="M183.08,56.72c-1.56-.02-2.77,1.12-2.81,2.66-.04,1.52,1.14,2.77,2.66,2.8,1.49.03,2.77-1.14,2.81-2.57.04-1.59-1.13-2.87-2.66-2.89Z"/>
+                    <path class="svg-fill" d="M119.89,52.73c.32.52.81.34,1.23.06.52-.36,1-.16,1.5.04.99.4,1.71.24,2.29-.49.29-.36.38-.78.13-1.14-.23-.32-.71-.3-.97-.1-.67.52-1.3.3-1.97.05-.27-.1-.57-.12-.66-.14-.6-.03-.94.1-1.25.37-.43.38-.58.87-.29,1.34Z"/>
+                    <path class="svg-fill" d="M71.96,0c-12.24-.05-22.49,9.92-22.69,22.09-.2,12.38,10.24,22.59,22.59,22.66,12.19.07,22.41-10.07,22.43-22.19C94.31,10.15,84.3.06,71.96,0ZM79.13,30.17c-5.06,5.34-13.5,3.68-16.62-2.81-2.45-5.09-.82-11.1,3.84-14.23,1.68-1.12,3.55-1.7,5.6-1.67,3.87.15,6.78,1.92,8.72,5.27,2.48,4.28,1.78,9.93-1.54,13.44Z"/>
+                    <path class="svg-fill" d="M78.72,61.95c.03-.97-.17-1.82-1.16-2.28,1.38-1.09,1.86-2.37,1.42-3.72-.38-1.17-1.58-1.92-3.26-1.95-1.53-.03-3.07-.03-4.61,0-1.01.02-1.4.39-1.41,1.39-.03,2.8-.02,5.61,0,8.42,0,.87.53,1.38,1.3,1.36.73-.02,1.18-.5,1.2-1.35.03-.83.03-1.65,0-2.48-.01-.44.13-.67.59-.66.71.02,1.42.01,2.12.05.74.03,1.16.4,1.33,1.16.16.67.1,1.35.23,2.02.17.88.85,1.4,1.63,1.25.79-.15,1.12-.76.85-1.71-.13-.49-.26-.97-.24-1.48ZM75.72,58.7c-.58.22-1.16.13-1.66.17q-1.84,0-1.84-1.79c0-1.21,0-1.22,1.26-1.22.68,0,1.36-.06,2.03.09.6.13,1.02.42,1.06,1.1.04.72-.04,1.34-.85,1.65Z"/>
+                    <path class="svg-fill" d="M170.26,56.56c-.46-1.14-1.31-1.86-2.46-2.24-1.7-.57-3.45-.28-5.18-.32-1.24-.03-1.61.4-1.61,1.67,0,1.27,0,2.54,0,3.81h.01c0,1.33-.02,2.66,0,3.99.02,1.06.42,1.46,1.44,1.49,1.18.03,2.37.08,3.54,0,2.03-.14,3.63-1.01,4.36-3.03.65-1.79.6-3.58-.12-5.35ZM167.94,61.35c-.39,1.06-1.17,1.54-2.4,1.55q-2.03.02-2.02-2.01c0-.5,0-1,0-1.5h0c0-.91.02-1.83,0-2.74-.02-.55.19-.75.72-.69.23.03.47.02.71,0,2.33-.15,3.2.97,3.35,3.22.05.75-.1,1.47-.35,2.17Z"/>
+                    <path class="svg-fill" d="M135.62,53.68c-3.77-.08-5.73,2.13-5.87,5.31-.16,3.97,1.81,6.11,5.47,6.19,3.35.07,5.57-2.16,5.64-5.65.06-3.46-2.01-5.77-5.24-5.84ZM137.85,61.74c-.57,1.18-1.64,1.54-2.87,1.46-1.23-.08-2.06-.79-2.44-1.96-.03-.08-.05-.16-.07-.23-.16-.54-.26-1.1-.24-1.67-.02-.55.08-1.08.27-1.59.03-.07.05-.15.08-.22.46-1.16,1.32-1.73,2.58-1.77,1.27-.04,2.29.34,2.8,1.55.62,1.48.6,2.99-.1,4.44Z"/>
+                    <path class="svg-fill" d="M127.19,63.16c-.98-2.77-2.01-5.53-2.96-8.31-.3-.87-.9-1.08-1.7-1.14-.61.05-1.26.09-1.53.79-1.12,2.94-2.24,5.88-3.32,8.84-.35.95-.1,1.53.6,1.76.75.25,1.29-.1,1.64-1.02q.55-1.46,2.1-1.46c.15,0,.3,0,.44,0,1.89,0,1.9,0,2.61,1.72.2.49.52.79,1.04.81.5.03.93-.15,1.19-.62.26-.47.04-.93-.11-1.37ZM123.34,60.91c-2.4.21-2.48.11-1.67-2.11.25-.68.49-1.36.83-2.31.46,1.45.82,2.66,1.24,3.84.16.46.04.54-.4.58Z"/>
+                    <path class="svg-fill" d="M59.95,56.43c-.04.23-.03.55-.03.99,0,.22.02.44,0,.66,0-.22,0-.44,0-.66,0-.44,0-.76.03-.99Z"/>
+                    <path class="svg-fill" d="M63.45,54.04c-1.53-.08-3.07-.06-4.6-.04-1.07.01-1.42.39-1.43,1.47-.02,1.39,0,2.77,0,4.16,0,1.39,0,2.77,0,4.16,0,.87.49,1.37,1.27,1.36.75,0,1.19-.49,1.21-1.32.01-.68.05-1.36,0-2.03-.06-.69.14-.94.87-.91,1,.04,2,.12,3-.07,1.68-.31,2.85-1.76,2.8-3.46-.05-1.86-1.29-3.22-3.12-3.31ZM62.62,58.95c-.67.07-1.36,0-2.03.05-.55.04-.75-.16-.69-.7,0-.07.01-.15.02-.22,0-.22,0-.44,0-.66,0-.28,0-.5,0-.69,0-.04,0-.07,0-.11,0-.07.01-.13.02-.19.01-.08.03-.14.05-.2.14-.38.51-.38,1.51-.37.41,0,.83.02,1.23.1.87.17,1.3.71,1.28,1.53-.03.78-.55,1.37-1.39,1.45Z"/>
+                    <path class="svg-fill" d="M59.91,57.42c0-.59,0-.96.08-1.19-.08.23-.08.6-.08,1.19,0,.22.02.44,0,.66,0-.22,0-.44,0-.66Z"/>
+                </g>
+            </svg>
+            <h1>Precificação 3D</h1>
+        </div>
+
+        <div class="input-group">
+            <label for="projectName">Nome do Projeto:</label>
+            <input type="text" id="projectName" value="Projeto XYZ">
+        </div>
+
+        <h3>Material (Filamento)</h3>
+        <div class="input-row">
+            <div class="input-group">
+                <label for="filamentCost">Custo do Rolo (R$):</label>
+                <input type="number" id="filamentCost" value="120.00" step="0.01" min="0">
+            </div>
+            <div class="input-group">
+                <label for="rollWeight">Peso do Rolo (kg):</label>
+                <input type="number" id="rollWeight" value="1.0" step="0.01" min="0.01">
+            </div>
+            <div class="input-group">
+                <label for="objectWeight">Peso do Objeto (g):</label>
+                <input type="number" id="objectWeight" value="50" step="0.01" min="0">
+            </div>
+        </div>
+
+        <h3>Impressão</h3>
+        <div class="input-row">
+            <div class="input-group">
+                <label>Tempo de Impressão:</label>
+                <div class="input-inline">
+                    <input type="number" id="printTimeHours" value="2" step="1" min="0" placeholder="Horas">
+                    <input type="number" id="printTimeMinutes" value="30" step="1" min="0" max="59" placeholder="Minutos">
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="printerHourCost">Custo por Hora Impressora (R$):</label>
+                <input type="number" id="printerHourCost" value="5.00" step="0.01" min="0">
+                <small style="color: #666; margin-top: 5px;">(Desgaste, depreciação)</small>
+            </div>
+            <div class="input-group">
+                <label for="printerPower">Potência da Impressora (Watts):</label>
+                <input type="number" id="printerPower" value="100" step="1" min="0">
+            </div>
+        </div>
+        <div class="input-row">
+            <div class="input-group">
+                <label for="kwhCost">Custo do kWh (R$):</label>
+                <input type="number" id="kwhCost" value="0.90" step="0.01" min="0">
+            </div>
+            <div class="input-group">
+                <label for="additionalCosts">Outros Custos (R$):</label>
+                <input type="number" id="additionalCosts" value="2.00" step="0.01" min="0">
+                <small style="color: #666; margin-top: 5px;">(Pós-processamento, embalagem)</small>
+            </div>
+            <div class="input-group">
+                <label for="profitMargin">Margem de Lucro (%):</label>
+                <input type="number" id="profitMargin" value="50" step="1" min="0">
+            </div>
+        </div>
+
+        <button class="calculate-btn" onclick="calculateAndSavePrice()">Calcular e Salvar no Histórico</button>
+
+        <div class="results" id="results">
+            <h2>Resultados Atuais</h2>
+            <p><span>Custo do Material:</span> <span id="displayMaterialCost">R$ 0,00</span></p>
+            <p><span>Custo do Tempo de Impressão:</span> <span id="displayTimeCost">R$ 0,00</span></p>
+            <p><span>Custo da Energia:</span> <span id="displayEnergyCost">R$ 0,00</span></p>
+            <p><span>Outros Custos:</span> <span id="displayAdditionalCosts">R$ 0,00</span></p>
+            <p style="border-top: 1px dashed #ddd; padding-top: 10px;"><span>Custo Total:</span> <span id="displayTotalCost" style="color: #d9534f;">R$ 0,00</span></p>
+            <p class="final-price">Preço de Venda Sugerido: <span id="displaySellingPrice">R$ 0,00</span></p>
+        </div>
+
+        <div id="history-section">
+            <h2>Histórico de Cálculos</h2>
+            <div id="history-table-container">
+                <table id="history-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Projeto</th>
+                            <th>C. Mat.</th>
+                            <th>C. Tempo</th>
+                            <th>C. Ener.</th>
+                            <th>Outros C.</th>
+                            <th>Custo Total</th>
+                            <th>Preço Venda</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- History items will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+                <div id="empty-history-message" class="empty-history-message" style="display: none;">
+                    Nenhum cálculo no histórico ainda.
+                </div>
+            </div>
+            <button class="calculate-btn clear-history-btn" onclick="clearAllHistory()">Limpar Histórico Completo</button>
+        </div>
+    </div>
+
+    <script>
+        const HISTORY_STORAGE_KEY = '3DPrintCalculatorHistory';
+        const LAST_INPUT_VALUES_KEY = '3DPrintCalculatorLastInputs';
+        let history = [];
+
+        function formatCurrency(value) {
+            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function collectInputValues() {
+            return {
+                projectName: document.getElementById('projectName').value,
+                filamentCost: parseFloat(document.getElementById('filamentCost').value),
+                rollWeightKg: parseFloat(document.getElementById('rollWeight').value),
+                objectWeightG: parseFloat(document.getElementById('objectWeight').value),
+                printTimeHours: parseFloat(document.getElementById('printTimeHours').value),
+                printTimeMinutes: parseFloat(document.getElementById('printTimeMinutes').value),
+                printerHourCost: parseFloat(document.getElementById('printerHourCost').value),
+                printerPowerWatts: parseFloat(document.getElementById('printerPower').value),
+                kwhCost: parseFloat(document.getElementById('kwhCost').value),
+                additionalCosts: parseFloat(document.getElementById('additionalCosts').value),
+                profitMargin: parseFloat(document.getElementById('profitMargin').value)
+            };
+        }
+
+        function applyInputValues(values) {
+            if (values) {
+                document.getElementById('projectName').value = values.projectName !== undefined ? values.projectName : 'Projeto XYZ';
+                document.getElementById('filamentCost').value = values.filamentCost !== undefined ? values.filamentCost : '120.00';
+                document.getElementById('rollWeight').value = values.rollWeightKg !== undefined ? values.rollWeightKg : '1.0';
+                document.getElementById('objectWeight').value = values.objectWeightG !== undefined ? values.objectWeightG : '50';
+                document.getElementById('printTimeHours').value = values.printTimeHours !== undefined ? values.printTimeHours : '2';
+                document.getElementById('printTimeMinutes').value = values.printTimeMinutes !== undefined ? values.printTimeMinutes : '30';
+                document.getElementById('printerHourCost').value = values.printerHourCost !== undefined ? values.printerHourCost : '5.00';
+                document.getElementById('printerPower').value = values.printerPowerWatts !== undefined ? values.printerPowerWatts : '100';
+                document.getElementById('kwhCost').value = values.kwhCost !== undefined ? values.kwhCost : '0.90';
+                document.getElementById('additionalCosts').value = values.additionalCosts !== undefined ? values.additionalCosts : '2.00';
+                document.getElementById('profitMargin').value = values.profitMargin !== undefined ? values.profitMargin : '50';
+            }
+        }
+
+        function saveLastInputValues() {
+            const currentInputs = collectInputValues();
+            localStorage.setItem(LAST_INPUT_VALUES_KEY, JSON.stringify(currentInputs));
+        }
+
+        function loadLastInputValues() {
+            const storedInputs = localStorage.getItem(LAST_INPUT_VALUES_KEY);
+            if (storedInputs) {
+                applyInputValues(JSON.parse(storedInputs));
+            }
+        }
+
+        function calculatePrice() {
+            const data = collectInputValues();
+
+            const projectName = data.projectName || 'Projeto Sem Nome';
+            const filamentCost = data.filamentCost;
+            const rollWeightKg = data.rollWeightKg;
+            const objectWeightG = data.objectWeightG;
+            const printTimeHours = data.printTimeHours;
+            const printTimeMinutes = data.printTimeMinutes;
+            const printerHourCost = data.printerHourCost;
+            const printerPowerWatts = data.printerPowerWatts;
+            const kwhCost = data.kwhCost;
+            const additionalCosts = data.additionalCosts;
+            const profitMargin = data.profitMargin;
+
+            // Validate inputs without alerts
+            if (isNaN(filamentCost) || isNaN(rollWeightKg) || isNaN(objectWeightG) ||
+                isNaN(printTimeHours) || isNaN(printTimeMinutes) || isNaN(printerHourCost) ||
+                isNaN(printerPowerWatts) || isNaN(kwhCost) || isNaN(additionalCosts) ||
+                isNaN(profitMargin) || rollWeightKg <= 0) {
+                // Keep previous results or clear them if initial load is invalid
+                document.getElementById('displayMaterialCost').textContent = 'R$ 0,00';
+                document.getElementById('displayTimeCost').textContent = 'R$ 0,00';
+                document.getElementById('displayEnergyCost').textContent = 'R$ 0,00';
+                document.getElementById('displayAdditionalCosts').textContent = 'R$ 0,00';
+                document.getElementById('displayTotalCost').textContent = 'R$ 0,00';
+                document.getElementById('displaySellingPrice').textContent = 'R$ 0,00';
+                return null;
+            }
+
+            const totalPrintTimeHours = printTimeHours + (printTimeMinutes / 60);
+
+            // Calculate costs
+            const materialCostPerGram = filamentCost / (rollWeightKg * 1000);
+            const calculatedMaterialCost = materialCostPerGram * objectWeightG;
+
+            const calculatedTimeCost = printerHourCost * totalPrintTimeHours;
+
+            const energyConsumptionKwh = (printerPowerWatts / 1000) * totalPrintTimeHours;
+            const calculatedEnergyCost = energyConsumptionKwh * kwhCost;
+
+            const totalCost = calculatedMaterialCost + calculatedTimeCost + calculatedEnergyCost + additionalCosts;
+
+            const sellingPrice = totalCost * (1 + (profitMargin / 100));
+
+            // Display results
+            document.getElementById('displayMaterialCost').textContent = formatCurrency(calculatedMaterialCost);
+            document.getElementById('displayTimeCost').textContent = formatCurrency(calculatedTimeCost);
+            document.getElementById('displayEnergyCost').textContent = formatCurrency(calculatedEnergyCost);
+            document.getElementById('displayAdditionalCosts').textContent = formatCurrency(additionalCosts);
+            document.getElementById('displayTotalCost').textContent = formatCurrency(totalCost);
+            document.getElementById('displaySellingPrice').textContent = formatCurrency(sellingPrice);
+
+            return {
+                projectName,
+                filamentCost,
+                rollWeightKg,
+                objectWeightG,
+                printTimeHours,
+                printTimeMinutes,
+                printerHourCost,
+                printerPowerWatts,
+                kwhCost,
+                additionalCosts,
+                profitMargin,
+                calculatedMaterialCost,
+                calculatedTimeCost,
+                calculatedEnergyCost,
+                totalCost,
+                sellingPrice
+            };
+        }
+
+        function calculateAndSavePrice() {
+            saveLastInputValues(); // Save current inputs before calculating and adding to history
+            const result = calculatePrice();
+            if (result) {
+                result.timestamp = new Date().toISOString(); // Add timestamp for history
+                history.unshift(result); // Add to the beginning of the history
+                saveHistory();
+                renderHistory();
+            }
+        }
+
+        function loadHistory() {
+            const storedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
+            if (storedHistory) {
+                history = JSON.parse(storedHistory);
+            }
+        }
+
+        function saveHistory() {
+            localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
+        }
+
+        function renderHistory() {
+            const historyTableBody = document.querySelector('#history-table tbody');
+            historyTableBody.innerHTML = ''; // Clear existing rows
+            const emptyMessage = document.getElementById('empty-history-message');
+
+            if (history.length === 0) {
+                emptyMessage.style.display = 'block';
+                return;
+            } else {
+                emptyMessage.style.display = 'none';
+            }
+
+            history.forEach((item, index) => {
+                const row = historyTableBody.insertRow();
+                const date = new Date(item.timestamp).toLocaleString('pt-BR', {
+                    year: 'numeric', month: 'numeric', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+
+                row.insertCell().textContent = date;
+                row.insertCell().textContent = item.projectName;
+                row.insertCell().textContent = formatCurrency(item.calculatedMaterialCost);
+                row.insertCell().textContent = formatCurrency(item.calculatedTimeCost);
+                row.insertCell().textContent = formatCurrency(item.calculatedEnergyCost);
+                row.insertCell().textContent = formatCurrency(item.additionalCosts);
+                row.insertCell().textContent = formatCurrency(item.totalCost);
+                row.insertCell().textContent = formatCurrency(item.sellingPrice);
+
+                const actionsCell = row.insertCell();
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'X';
+                deleteButton.className = 'delete-btn';
+                deleteButton.title = 'Excluir este cálculo';
+                deleteButton.onclick = () => deleteCalculation(index);
+                actionsCell.appendChild(deleteButton);
+            });
+        }
+
+        function deleteCalculation(index) {
+            // Confirm for individual deletion, as it's less intrusive than an alert
+            if (confirm('Tem certeza que deseja excluir este cálculo do histórico?')) {
+                history.splice(index, 1);
+                saveHistory();
+                renderHistory();
+            }
+        }
+
+        function clearAllHistory() {
+            // Only this alert remains, as requested
+            if (confirm('Tem certeza que deseja limpar TODO o histórico de cálculos? Esta ação não pode ser desfeita.')) {
+                history = [];
+                saveHistory();
+                renderHistory();
+            }
+        }
+
+        // Initialize on page load
+        window.onload = () => {
+            loadLastInputValues(); // Load previously saved inputs
+            loadHistory(); // Load history items
+            renderHistory(); // Render history table
+            calculatePrice(); // Perform an initial calculation with loaded inputs to update display
+        };
+    </script>
+</body>
+</html>
