@@ -42,6 +42,7 @@
             margin: 0;
             font-size: 1.2em;
             letter-spacing: -0.5px;
+            margin-top: 70px;
         }
         h3 {
             color: #34495e;
@@ -122,7 +123,7 @@
             color: #2c3e50;
             text-align: center;
             margin-bottom: 20px;
-            font-size: 1.5em;
+            font-size: 1.2em;
         }
         .results p {
             margin-bottom: 10px;
@@ -140,7 +141,7 @@
             color: #007bff;
         }
         .results .final-price {
-            font-size: 1.4em;
+            font-size: 1.2em;
             color: #28a745;
             text-align: center;
             margin-top: 20px;
@@ -312,14 +313,14 @@
         <div class="input-row">
             <div class="input-group">
                 <label for="filamentCost">Custo do Rolo (R$):</label>
-                <input type="number" id="filamentCost" value="120.00" step="0.01" min="0">
+                <input type="number" id="filamentCost" value="100.00" step="0.01" min="0">
             </div>
             <div class="input-group">
                 <label for="rollWeight">Peso do Rolo (kg):</label>
                 <input type="number" id="rollWeight" value="1.0" step="0.01" min="0.01">
             </div>
             <div class="input-group">
-                <label for="objectWeight">Peso do Objeto (g):</label>
+                <label for="objectWeight">Peso do Objeto Impresso (g):</label>
                 <input type="number" id="objectWeight" value="50" step="0.01" min="0">
             </div>
         </div>
@@ -340,13 +341,13 @@
             </div>
             <div class="input-group">
                 <label for="printerPower">Potência da Impressora (Watts):</label>
-                <input type="number" id="printerPower" value="100" step="1" min="0">
+                <input type="number" id="printerPower" value="150" step="1" min="0">
             </div>
         </div>
         <div class="input-row">
             <div class="input-group">
                 <label for="kwhCost">Custo do kWh (R$):</label>
-                <input type="number" id="kwhCost" value="0.90" step="0.01" min="0">
+                <input type="number" id="kwhCost" value="1.09" step="0.01" min="0">
             </div>
             <div class="input-group">
                 <label for="additionalCosts">Outros Custos (R$):</label>
@@ -355,11 +356,11 @@
             </div>
             <div class="input-group">
                 <label for="profitMargin">Margem de Lucro (%):</label>
-                <input type="number" id="profitMargin" value="50" step="1" min="0">
+                <input type="number" id="profitMargin" value="100" step="1" min="0">
             </div>
         </div>
 
-        <button class="calculate-btn" onclick="calculateAndSavePrice()">Calcular e Salvar no Histórico</button>
+        <button class="calculate-btn" onclick="calculateAndSavePrice()">Calcular e Salvar</button>
 
         <div class="results" id="results">
             <h2>Resultados Atuais</h2>
@@ -368,7 +369,7 @@
             <p><span>Custo da Energia:</span> <span id="displayEnergyCost">R$ 0,00</span></p>
             <p><span>Outros Custos:</span> <span id="displayAdditionalCosts">R$ 0,00</span></p>
             <p style="border-top: 1px dashed #ddd; padding-top: 10px;"><span>Custo Total:</span> <span id="displayTotalCost" style="color: #d9534f;">R$ 0,00</span></p>
-            <p class="final-price">Preço de Venda Sugerido: <span id="displaySellingPrice">R$ 0,00</span></p>
+            <p class="final-price">Preço de Venda: <span id="displaySellingPrice">R$ 0,00</span></p>
         </div>
 
         <div id="history-section">
@@ -613,6 +614,7 @@
     </script>
 </body>
 </html>
+
 
 
 
